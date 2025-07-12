@@ -182,9 +182,9 @@ else:
         else:
             st.metric("PBR", "N/A")
     
-    col_val5, col_val6 = st.columns(2)
-    with col_val5:
-        st.metric("PEG Ratio", f"{info.get('pegRatio', 'N/A'):.2f}" if isinstance(info.get('pegRatio'), (int, float)) else "N/A")
+    col_val5, col_val6 = st.columns(2) # col_val5가 PEG Ratio 자리였으나 제거됨
+    # with col_val5: # PEG Ratio 제거
+    #     st.metric("PEG Ratio", f"{info.get('pegRatio', 'N/A'):.2f}" if isinstance(info.get('pegRatio'), (int, float)) else "N/A")
     with col_val6:
         st.metric("EV/EBITDA", f"{info.get('enterpriseToEbitda', 'N/A'):.2f}" if isinstance(info.get('enterpriseToEbitda'), (int, float)) else "N/A")
 
