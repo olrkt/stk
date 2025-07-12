@@ -79,6 +79,10 @@ else:
     # Interactive Candlestick and Volume Chart (Plotly Subplots)
     st.subheader("주가 및 거래량 추이")
     
+    # 이동 평균선 계산
+    data['SMA_20'] = data['Close'].rolling(window=20).mean()
+    data['SMA_50'] = data['Close'].rolling(window=50).mean()
+
     fig = make_subplots(
         rows=2, cols=1,
         shared_xaxes=True,
@@ -86,6 +90,7 @@ else:
         row_heights=[0.7, 0.3]
     )
 
+    # 캔들스틱 차트 추가
     fig.add_trace(go.Candlestick(
         x=data.index,
         open=data['Open'],
@@ -93,44 +98,69 @@ else:
         low=data['Low'],
         close=data['Close'],
         name='주가',
-        increasing_line_color='red',
-        increasing_fillcolor='red',
-        decreasing_line_color='blue',
-        decreasing_fillcolor='blue',
+        increasing_line_color='red', # 양봉 색상
+        decreasing_line_color='blue', # 음봉 색상
         hovertext=[f"날짜: {idx.strftime('%Y-%m-%d')}<br>시가: {o:.2f}<br>고가: {h:.2f}<br>저가: {l:.2f}<br>종가: {c:.2f}"
                    for idx, o, h, l, c in zip(data.index, data['Open'], data['High'], data['Low'], data['Close'])]
     ), row=1, col=1)
 
+    # 20일 이동 평균선 추가
+    fig.add_trace(go.Scatter(
+        x=data.index,
+        y=data['SMA_20'],
+        mode='lines',
+        name='SMA 20',
+        line=dict(color='orange', width=1.5)
+    ), row=1, col=1)
+
+    # 50일 이동 평균선 추가
+    fig.add_trace(go.Scatter(
+        x=data.index,
+        y=data['SMA_50'],
+        mode='lines',
+        name='SMA 50',
+        line=dict(color='purple', width=1.5)
+    ), row=1, col=1)
+
+    # 거래량 차트 추가
     fig.add_trace(go.Bar(
         x=data.index,
         y=data['Volume'],
         name='거래량',
-        marker_color='lightgray',
+        marker_color='lightgray', # 거래량 바 색상
         hovertext=[f"날짜: {idx.strftime('%Y-%m-%d')}<br>거래량: {v:,}"
                    for idx, v in zip(data.index, data['Volume'])]
     ), row=2, col=1)
 
     fig.update_layout(
         title=f'{ticker_to_analyze} 주가 및 거래량 차트',
-        height=700,
-        hovermode="x unified"
+        height=500, # 모바일 가독성을 위한 높이 유지
+        hovermode="x unified", # 마우스 오버 시 정보 통일
+        xaxis_rangeslider_visible=False, # 상단 차트에서는 레인지 슬라이더 숨기기 (하단에만 표시)
+        legend=dict( # 범례 위치 설정
+            orientation="h", # 수평으로 배치
+            yanchor="bottom",
+            y=1.02, # 차트 상단 위쪽에 배치
+            xanchor="right",
+            x=1
+        )
     )
 
     fig.update_xaxes(
         title_text="날짜",
-        rangeslider_visible=False,
+        rangeslider_visible=False, # 상단 차트에서는 rangeslider 숨김
         row=1, col=1
     )
     fig.update_xaxes(
         title_text="날짜",
-        rangeslider_visible=True,
+        rangeslider_visible=True, # 하단 차트(거래량)에 rangeslider 표시
         row=2, col=1
     )
     
     fig.update_yaxes(title_text="주가", row=1, col=1)
     fig.update_yaxes(title_text="거래량", row=2, col=1)
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True) # 컨테이너 너비에 맞게 조절
 
     # Enhanced Financials
     st.subheader("📊 재무 핵심 지표")
@@ -220,4 +250,3 @@ else:
             st.info(f"'{ticker_to_analyze}' 관련 뉴스를 찾을 수 없습니다.")
     except Exception as e:
         st.error(f"뉴스를 불러오는 중 오류가 발생했습니다: {e}")
-
